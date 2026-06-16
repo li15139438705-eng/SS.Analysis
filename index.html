@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>不锈钢市场分析系统 · 华方</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --c-bg:#f5f5f4;--c-bg2:#fafaf9;--c-white:#ffffff;
+  --c-ink:#18181b;--c-ink2:#3f3f46;--c-ink3:#71717a;--c-ink4:#a1a1aa;
+  --c-border:#e4e4e7;--c-border2:#d4d4d8;
+  --c-bull:#16a34a;--c-bull-l:#dcfce7;--c-bull-m:#22c55e;
+  --c-bear:#dc2626;--c-bear-l:#fee2e2;--c-bear-m:#ef4444;
+  --c-neu:#52525b;--c-neu-l:#f4f4f5;
+  --c-gold:#b45309;--c-gold-l:#fef3c7;
+  --c-blue:#2563eb;--c-blue-l:#dbeafe;
+  --c-purple:#7c3aed;--c-purple-l:#ede9fe;
+  --radius:8px;--radius-lg:14px;--radius-xl:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;scroll-behavior:smooth;}
+body{background:var(--c-bg);color:var(--c-ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* ── 整体布局 ── */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:220px;flex-shrink:0;background:var(--c-white);border-right:1px solid var(--c-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+.main{flex:1;margin-left:220px;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{height:52px;background:var(--c-white);border-bottom:1px solid var(--c-border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50;}
+.content{flex:1;padding:24px 28px 60px;}
+
+/* ── 侧边栏 ── */
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid var(--c-border);}
+.sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.sb-logo-mark{background:var(--c-ink);color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 9px;border-radius:6px;}
+.sb-logo-name{font-size:15px;font-weight:600;color:var(--c-ink);}
+.sb-sub{font-size:11px;color:var(--c-ink4);}
+.sb-nav{padding:12px 10px;flex:1;}
+.nav-group{margin-bottom:20px;}
+.nav-group-label{font-size:10px;font-weight:600;color:var(--c-ink4);letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--c-ink3);font-size:13px;font-weight:500;transition:all .15s;text-decoration:none;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--c-bg);color:var(--c-ink);}
+.nav-item.active{background:var(--c-ink);color:#fff;}
+.nav-item .ni-icon{font-size:15px;width:18px;text-align:center;}
+.sb-bottom{padding:12px 10px;border-top:1px solid var(--c-border);}
+.update-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--c-blue);color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;width:100%;justify-content:center;transition:opacity .15s;}
+.update-btn:hover{opacity:.9;}
+
+/* ── 顶栏 ── */
+.tb-date{font-size:12px;color:var(--c-ink3);}
+.tb-updated{font-size:12px;color:var(--c-ink4);margin-left:auto;}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c-bull-m);animation:pulse 2s infinite;margin-right:5px;vertical-align:middle;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.loading-bar{height:2px;background:linear-gradient(90deg,var(--c-blue),var(--c-purple));position:fixed;top:0;left:0;width:100%;z-index:999;transition:opacity .3s;}
+
+/* ── 面板 ── */
+.panel{display:none;animation:fadeIn .2s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── 卡片 ── */
+.card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);box-shadow:var(--shadow);}
+.card-pad{padding:20px 24px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:600;color:var(--c-ink2);letter-spacing:.3px;}
+.card-sub{font-size:11px;color:var(--c-ink4);}
+.card-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+
+/* ── 网格 ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.g-full{grid-column:1/-1;}
+
+/* ── 综合评分 ── */
+.score-hero{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-xl);padding:28px 32px;margin-bottom:16px;display:flex;align-items:center;gap:32px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;}
+.score-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.06),transparent 70%);}
+.score-ring{width:96px;height:96px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;border:3px solid currentColor;}
+.score-num{font-size:30px;font-weight:700;line-height:1;font-feature-settings:"tnum";}
+.score-lbl{font-size:10px;color:var(--c-ink4);margin-top:3px;letter-spacing:1px;}
+.score-info{flex:1;}
+.score-verdict{font-size:22px;font-weight:700;margin-bottom:6px;}
+.score-desc{font-size:13px;color:var(--c-ink2);line-height:1.7;max-width:520px;}
+.score-meta{font-size:11px;color:var(--c-ink4);margin-top:10px;}
+.score-kpis{display:flex;gap:24px;margin-top:14px;flex-wrap:wrap;}
+.kpi{display:flex;flex-direction:column;gap:2px;}
+.kpi-v{font-size:16px;font-weight:700;font-feature-settings:"tnum";}
+.kpi-l{font-size:10px;color:var(--c-ink4);}
+
+/* ── 维度得分条 ── */
+.dim-bars{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow);}
+.dim-row{display:grid;grid-template-columns:130px 1fr 52px 44px;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--c-border);}
+.dim-row:last-child{border-bottom:none;}
+.dr-name{font-size:12px;font-weight:600;color:var(--c-ink2);}
+.dr-sub{font-size:10px;color:var(--c-ink4);margin-top:1px;}
+.bar-track{height:6px;background:var(--c-bg);border-radius:3px;position:relative;}
+.bar-mid{position:absolute;left:50%;top:-3px;width:1px;height:12px;background:var(--c-border2);}
+.bar-fill{height:100%;border-radius:3px;position:absolute;top:0;transition:width .5s,left .5s;}
+.dr-wt{font-size:10px;color:var(--c-ink4);text-align:center;}
+.dr-score{font-size:14px;font-weight:700;text-align:right;font-feature-settings:"tnum";}
+
+/* ── 小数值卡 ── */
+.kpi-card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
+.kc-label{font-size:11px;color:var(--c-ink4);margin-bottom:6px;font-weight:500;}
+.kc-val{font-size:22px;font-weight:700;font-feature-settings:"tnum";line-height:1.2;}
+.kc-sub{font-size:11px;color:var(--c-ink3);margin-top:4px;}
+.kc-tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-top:6px;font-weight:600;}
+.kc-trend{display:flex;gap:3px;margin-top:8px;}
+.kc-dot{width:16px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+
+/* ── 图表卡 ── */
+.chart-card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow);}
+.cc-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+.cc-title{font-size:12px;font-weight:600;color:var(--c-ink2);}
+.cc-note{font-size:10px;color:var(--c-ink4);}
+.cc-wrap{position:relative;}
+
+/* ── 表格 ── */
+.tbl-wrap{overflow-x:auto;}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12px;}
+.dtbl th{padding:9px 12px;text-align:left;color:var(--c-ink4);font-weight:500;border-bottom:1px solid var(--c-border);background:var(--c-bg2);white-space:nowrap;}
+.dtbl td{padding:9px 12px;border-bottom:1px solid var(--c-border);color:var(--c-ink);white-space:nowrap;font-feature-settings:"tnum";}
+.dtbl tr:last-child td{border-bottom:none;}
+.dtbl tr:hover td{background:var(--c-bg);}
+.dtbl td.mono{font-feature-settings:"tnum";font-variant-numeric:tabular-nums;}
+
+/* ── 标签 ── */
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.tag-bull{background:var(--c-bull-l);color:var(--c-bull);}
+.tag-bear{background:var(--c-bear-l);color:var(--c-bear);}
+.tag-neu{background:var(--c-neu-l);color:var(--c-neu);}
+.tag-gold{background:var(--c-gold-l);color:var(--c-gold);}
+.tag-blue{background:var(--c-blue-l);color:var(--c-blue);}
+
+/* ── 资金面指标卡 ── */
+.capital-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px;}
+.cap-card{background:var(--c-bg2);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px;}
+.cap-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.cap-name{font-size:11px;font-weight:600;color:var(--c-ink2);}
+.cap-score{font-size:14px;font-weight:700;font-feature-settings:"tnum";}
+.cap-val{font-size:19px;font-weight:700;font-feature-settings:"tnum";}
+.cap-sub{font-size:10px;color:var(--c-ink4);margin-top:3px;}
+.cap-hint{font-size:11px;font-weight:500;margin-top:6px;}
+.cap-trend{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap;}
+
+/* ── 宏观指标卡 ── */
+.macro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+.macro-card{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);}
+.mc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.mc-name{font-size:11px;font-weight:600;color:var(--c-ink3);}
+.mc-impact{font-size:10px;padding:1px 7px;border-radius:10px;}
+.mc-val{font-size:22px;font-weight:700;font-feature-settings:"tnum";line-height:1.2;}
+.mc-unit{font-size:11px;color:var(--c-ink4);margin-left:3px;font-weight:400;}
+.mc-chg{font-size:12px;font-weight:600;margin-top:4px;}
+.mc-note{font-size:11px;color:var(--c-ink3);margin-top:6px;}
+.mc-empty{font-size:18px;font-weight:600;color:var(--c-ink4);}
+
+/* ── 基本面分析 ── */
+.analysis-section{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow);}
+.as-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--c-border);}
+.as-title{font-size:14px;font-weight:600;color:var(--c-ink);}
+.as-badge-row{display:flex;gap:8px;align-items:center;}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px;}
+.stat-box{background:var(--c-bg2);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--c-border);}
+.sb-l{font-size:10px;color:var(--c-ink4);margin-bottom:4px;font-weight:500;}
+.sb-v{font-size:18px;font-weight:700;font-feature-settings:"tnum";}
+.sb-s{font-size:11px;color:var(--c-ink3);margin-top:3px;}
+
+/* ── 分位数可视化 ── */
+.pct-bar{background:var(--c-bg);border-radius:4px;height:8px;position:relative;margin:6px 0 2px;}
+.pct-fill{height:100%;border-radius:4px;position:absolute;top:0;left:0;transition:width .6s;}
+.pct-label{display:flex;justify-content:space-between;font-size:10px;color:var(--c-ink4);}
+
+/* ── 相关性 ── */
+.corr-row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+.corr-l{font-size:12px;color:var(--c-ink2);width:100px;flex-shrink:0;}
+.corr-track{flex:1;height:6px;background:var(--c-bg);border-radius:3px;overflow:hidden;}
+.corr-fill{height:100%;border-radius:3px;}
+.corr-v{font-size:12px;font-weight:700;min-width:44px;text-align:right;font-feature-settings:"tnum";}
+
+/* ── 手动评分输入 ── */
+.score-input-section{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow);}
+.si-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
+.si-card{background:var(--c-bg2);border:1px solid var(--c-border);border-radius:var(--radius);padding:14px 16px;}
+.si-name{font-size:13px;font-weight:600;color:var(--c-ink);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.si-badge{font-size:13px;font-weight:700;font-feature-settings:"tnum";}
+.si-hint{font-size:11px;color:var(--c-ink4);margin-bottom:8px;}
+.slider-row{display:flex;align-items:center;gap:8px;}
+.slider-row input[type=range]{flex:1;accent-color:var(--c-blue);cursor:pointer;}
+.slider-row .sv{font-size:13px;font-weight:700;min-width:28px;text-align:right;font-feature-settings:"tnum";}
+.sl-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--c-ink4);margin-top:3px;}
+.si-note{width:100%;font-size:12px;background:var(--c-white);border:1px solid var(--c-border2);border-radius:6px;padding:7px 10px;margin-top:10px;font-family:inherit;color:var(--c-ink);resize:vertical;min-height:38px;}
+.si-note::placeholder{color:var(--c-ink4);}
+
+/* ── 数据录入 ── */
+.form-section{background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-lg);padding:22px 26px;margin-bottom:16px;box-shadow:var(--shadow);}
+.fs-title{font-size:15px;font-weight:600;color:var(--c-ink);margin-bottom:4px;}
+.fs-sub{font-size:12px;color:var(--c-ink4);margin-bottom:18px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+.form-item{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:12px;font-weight:500;color:var(--c-ink2);}
+.form-hint{font-size:10px;color:var(--c-ink4);}
+.form-input{font-size:13px;padding:8px 12px;border:1px solid var(--c-border2);border-radius:8px;background:var(--c-bg2);color:var(--c-ink);font-family:inherit;transition:border-color .15s;}
+.form-input:focus{outline:none;border-color:var(--c-blue);background:var(--c-white);}
+.form-input::placeholder{color:var(--c-ink4);}
+.form-actions{display:flex;gap:10px;margin-top:20px;align-items:center;flex-wrap:wrap;}
+.btn-save{font-size:13px;font-weight:600;padding:9px 24px;background:var(--c-ink);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s;}
+.btn-save:hover{opacity:.85;}
+.btn-reset{font-size:13px;padding:9px 18px;background:var(--c-white);color:var(--c-ink2);border:1px solid var(--c-border2);border-radius:8px;cursor:pointer;}
+.save-msg{font-size:12px;color:var(--c-bull);font-weight:500;}
+
+/* ── 空状态 ── */
+.empty{text-align:center;padding:40px;color:var(--c-ink4);font-size:13px;}
+
+/* ── 分割线标题 ── */
+.section-head{font-size:11px;font-weight:700;color:var(--c-ink4);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;margin-top:4px;display:flex;align-items:center;gap:8px;}
+.section-head::after{content:'';flex:1;height:1px;background:var(--c-border);}
+
+/* ── 响应式 ── */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .score-hero{flex-direction:column;gap:18px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loading-bar" class="loading-bar"></div>
+
+<div class="layout">
+<!-- ═══ 侧边栏 ═══ -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">华方</div>
+      <div class="sb-logo-name">SS 分析</div>
+    </div>
+    <div class="sb-sub">不锈钢市场评分系统 v1.0</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">评分模型</div>
+      <button class="nav-item active" onclick="showPanel('overview',this)"><span class="ni-icon">⚡</span>综合评分</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">分维度分析</div>
+      <button class="nav-item" onclick="showPanel('fundamental',this)"><span class="ni-icon">📦</span>基本面</button>
+      <button class="nav-item" onclick="showPanel('capital',this)"><span class="ni-icon">📈</span>资金面</button>
+      <button class="nav-item" onclick="showPanel('macro',this)"><span class="ni-icon">🌐</span>宏观面</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">数据管理</div>
+      <button class="nav-item" onclick="showPanel('input',this)"><span class="ni-icon">✏️</span>数据录入</button>
+      <button class="nav-item" onclick="showPanel('history',this)"><span class="ni-icon">🗂</span>历史记录</button>
+    </div>
+  </nav>
+  <div class="sb-bottom">
+    <button class="update-btn" onclick="showPanel('input',document.querySelector('[onclick*=input]'))">
+      <span>＋</span> 录入今日数据
+    </button>
+  </div>
+</aside>
+
+<!-- ═══ 主区 ═══ -->
+<div class="main">
+  <div class="topbar">
+    <span class="live-dot"></span>
+    <span class="tb-date" id="tb-date">加载中...</span>
+    <span class="tb-updated" id="tb-updated"></span>
+  </div>
+  <div class="content">
+
+  <!-- ══════════════════════════════
+       综合评分
+  ══════════════════════════════ -->
+  <div class="panel active" id="panel-overview">
+
+    <!-- 主评分卡 -->
+    <div class="score-hero" id="sh-card">
+      <div class="score-ring" id="sh-ring">
+        <div class="score-num" id="sh-num">—</div>
+        <div class="score-lbl">综合得分</div>
+      </div>
+      <div class="score-info">
+        <div class="score-verdict" id="sh-verdict">计算中</div>
+        <div class="score-desc" id="sh-desc">数据加载中...</div>
+        <div class="score-kpis" id="sh-kpis"></div>
+        <div class="score-meta" id="sh-meta"></div>
+      </div>
+    </div>
+
+    <!-- 五维度得分条 -->
+    <div class="dim-bars" style="margin-bottom:16px;">
+      <div class="card-head">
+        <div class="card-title">五维度拆解</div>
+        <div style="font-size:11px;color:var(--c-ink4);">分值 −2 至 +2，越高越偏多</div>
+      </div>
+      <div id="dim-rows"></div>
+    </div>
+
+    <!-- 快速看基本面&资金面KPI -->
+    <div class="section-head">今日关键指标</div>
+    <div class="g4" id="quick-kpis"></div>
+
+    <!-- 近期综合得分走势 -->
+    <div class="chart-card" style="margin-bottom:14px;">
+      <div class="cc-head">
+        <div class="cc-title">综合评分历史走势</div>
+        <div class="cc-note">蓝=综合 · 绿=资金面 · 灰=中性线</div>
+      </div>
+      <div class="cc-wrap" style="height:180px;"><canvas id="c-overview-score"></canvas></div>
+    </div>
+
+    <!-- 操作建议 -->
+    <div class="card card-pad" id="action-card">
+      <div class="card-head">
+        <div class="card-title">今日操作建议</div>
+        <span class="tag" id="action-tag">加载中</span>
+      </div>
+      <div id="action-content" style="font-size:13px;color:var(--c-ink2);line-height:1.8;"></div>
+    </div>
+
+  </div><!-- /overview -->
+
+
+  <!-- ══════════════════════════════
+       基本面
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-fundamental">
+
+    <!-- 当日基本面快照 -->
+    <div class="analysis-section">
+      <div class="as-head">
+        <div class="as-title">📦 基本面 · 今日快照</div>
+        <div class="as-badge-row">
+          <span class="tag tag-blue">权重 30%</span>
+          <span id="fund-score-badge" class="tag">—</span>
+        </div>
+      </div>
+      <div class="stat-row" id="fund-stats"></div>
+    </div>
+
+    <!-- 基差分析 -->
+    <div class="section-head">基差分析</div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="analysis-section" style="margin-bottom:0;">
+        <div class="as-head" style="margin-bottom:12px;">
+          <div class="as-title" style="font-size:13px;">基差历史分位</div>
+          <div id="basis-pct-badge" class="tag">—</div>
+        </div>
+        <div id="basis-pct-vis"></div>
+        <div style="font-size:12px;color:var(--c-ink3);margin-top:10px;" id="basis-analysis"></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0;">
+        <div class="cc-head"><div class="cc-title">基差走势（元）</div><div class="cc-note">现货−期货</div></div>
+        <div class="cc-wrap" style="height:140px;"><canvas id="c-basis"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 仓单分析 -->
+    <div class="section-head">仓单分析</div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="analysis-section" style="margin-bottom:0;">
+        <div class="as-head" style="margin-bottom:12px;">
+          <div class="as-title" style="font-size:13px;">仓单历史分位</div>
+          <div id="wh-pct-badge" class="tag">—</div>
+        </div>
+        <div id="wh-pct-vis"></div>
+        <div style="font-size:12px;color:var(--c-ink3);margin-top:10px;" id="wh-analysis"></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0;">
+        <div class="cc-head"><div class="cc-title">仓单走势（吨）</div></div>
+        <div class="cc-wrap" style="height:140px;"><canvas id="c-warehouse"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 月差结构 -->
+    <div class="section-head">月差结构</div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="analysis-section" style="margin-bottom:0;">
+        <div class="as-head" style="margin-bottom:12px;">
+          <div class="as-title" style="font-size:13px;">月差判断</div>
+          <div id="spread-badge" class="tag">—</div>
+        </div>
+        <div id="spread-analysis"></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0;">
+        <div class="cc-head"><div class="cc-title">月差走势（元）</div><div class="cc-note">负=Back结构</div></div>
+        <div class="cc-wrap" style="height:140px;"><canvas id="c-spread"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 基差仓单相关性 -->
+    <div class="analysis-section" style="margin-bottom:14px;">
+      <div class="as-head"><div class="as-title">相关性分析</div><div style="font-size:11px;color:var(--c-ink4);">基于历史数据</div></div>
+      <div id="corr-section"></div>
+    </div>
+
+    <!-- 基本面手动评分输入 -->
+    <div class="score-input-section">
+      <div class="card-head">
+        <div>
+          <div class="card-title">基本面综合评分</div>
+          <div style="font-size:11px;color:var(--c-ink4);margin-top:3px;">每日收盘后根据当日数据综合判断</div>
+        </div>
+        <div id="fund-manual-badge" class="tag tag-neu">0</div>
+      </div>
+      <div class="si-grid">
+        <div class="si-card">
+          <div class="si-name">基差判断 <span class="si-badge" id="sv-basis" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">基差偏高分位（相对历史）且走强 → 偏多</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-basis" oninput="setScore('basis',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-basis2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>强空</span><span>偏空</span><span>中性</span><span>偏多</span><span>强多</span></div>
+        </div>
+        <div class="si-card">
+          <div class="si-name">仓单判断 <span class="si-badge" id="sv-warehouse" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">仓单低分位且去库 → 偏多；高分位且累库 → 偏空</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-warehouse" oninput="setScore('warehouse',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-warehouse2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>强空</span><span>偏空</span><span>中性</span><span>偏多</span><span>强多</span></div>
+        </div>
+        <div class="si-card">
+          <div class="si-name">月差结构 <span class="si-badge" id="sv-spread" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">Back结构（负值）且走扩 → 偏多（现货强）</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-spread" oninput="setScore('spread',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-spread2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>强空</span><span>偏空</span><span>中性</span><span>偏多</span><span>强多</span></div>
+        </div>
+      </div>
+      <textarea class="si-note" style="margin-top:14px;width:100%;" placeholder="基本面备注（选填）..." id="note-fundamental"></textarea>
+    </div>
+
+  </div><!-- /fundamental -->
+
+
+  <!-- ══════════════════════════════
+       资金面
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-capital">
+
+    <div class="analysis-section" style="margin-bottom:14px;">
+      <div class="as-head">
+        <div class="as-title">📈 资金面 · 龙虎榜</div>
+        <div class="as-badge-row">
+          <span class="tag tag-blue">权重 25%</span>
+          <span class="tag tag-blue">自动计算</span>
+          <span id="cap-total-badge" class="tag">—</span>
+        </div>
+      </div>
+      <div class="capital-grid" id="cap-cards"></div>
+    </div>
+
+    <!-- 走势图 -->
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">资金面综合得分</div><div class="cc-note">蓝=得分 红线=0</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-cap-score"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">高盛期货净多持仓（手）</div><div class="cc-note">外资风向标</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-gs"></canvas></div>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">买卖总净差（手）</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-net"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">外资合力（高盛+瑞银）</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-foreign"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 逐日历史 -->
+    <div class="analysis-section">
+      <div class="as-head"><div class="as-title">逐日评分历史</div><div style="font-size:11px;color:var(--c-ink4);">4.24~6.12，32个交易日</div></div>
+      <div class="tbl-wrap">
+        <table class="dtbl" id="cap-hist-tbl">
+          <thead><tr>
+            <th>日期</th><th>总分</th><th>判断</th>
+            <th>①高盛</th><th>②大空头</th><th>③净差</th><th>④外资</th>
+            <th>高盛净多</th><th>总净差</th><th>价格</th>
+          </tr></thead>
+          <tbody id="cap-hist-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /capital -->
+
+
+  <!-- ══════════════════════════════
+       宏观面
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-macro">
+
+    <div class="analysis-section" style="margin-bottom:14px;">
+      <div class="as-head">
+        <div class="as-title">🌐 宏观面 · 今日快照</div>
+        <div class="as-badge-row">
+          <span class="tag tag-blue">权重 20%</span>
+          <span id="macro-score-badge" class="tag">—</span>
+        </div>
+      </div>
+      <div class="macro-grid" id="macro-cards"></div>
+    </div>
+
+    <!-- 成本核算 -->
+    <div class="analysis-section" style="margin-bottom:14px;">
+      <div class="as-head">
+        <div class="as-title">成本锚定分析</div>
+        <div style="font-size:11px;color:var(--c-ink4);">当前期货价格与理论成本的距离</div>
+      </div>
+      <div id="cost-section"></div>
+    </div>
+
+    <!-- 镍价走势 -->
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">LME镍价走势</div><div class="cc-note">美元/吨</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-lme"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-head"><div class="cc-title">美元指数</div><div class="cc-note">越高大宗商品压力越大</div></div>
+        <div class="cc-wrap" style="height:150px;"><canvas id="c-usd"></canvas></div>
+      </div>
+    </div>
+
+    <!-- 宏观手动评分 -->
+    <div class="score-input-section">
+      <div class="card-head">
+        <div>
+          <div class="card-title">宏观面综合评分</div>
+          <div style="font-size:11px;color:var(--c-ink4);margin-top:3px;">根据成本端、需求端、金融环境综合判断</div>
+        </div>
+        <div id="macro-manual-badge" class="tag tag-neu">0</div>
+      </div>
+      <div class="si-grid">
+        <div class="si-card">
+          <div class="si-name">成本端 <span class="si-badge" id="sv-cost" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">镍/铬价格高位 → 成本支撑 → 偏多下跌空间有限</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-cost" oninput="setScore('cost',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-cost2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>成本低</span><span></span><span>中性</span><span></span><span>成本高</span></div>
+        </div>
+        <div class="si-card">
+          <div class="si-name">需求端 <span class="si-badge" id="sv-demand" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">PMI扩张/出口好/旺季 → 偏多；PMI收缩/淡季 → 偏空</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-demand" oninput="setScore('demand',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-demand2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>需求差</span><span></span><span>中性</span><span></span><span>需求好</span></div>
+        </div>
+        <div class="si-card">
+          <div class="si-name">金融环境 <span class="si-badge" id="sv-finance" style="color:var(--c-neu)">0</span></div>
+          <div class="si-hint">美元弱/铜强/大宗情绪好 → 偏多；美元强/大宗下行 → 偏空</div>
+          <div class="slider-row">
+            <span style="font-size:10px;color:var(--c-ink4)">−2</span>
+            <input type="range" min="-2" max="2" step="1" value="0" id="sl-finance" oninput="setScore('finance',+this.value)">
+            <span style="font-size:10px;color:var(--c-ink4)">+2</span>
+            <span class="sv" id="sv-finance2" style="color:var(--c-neu)">0</span>
+          </div>
+          <div class="sl-marks"><span>金融利空</span><span></span><span>中性</span><span></span><span>金融利多</span></div>
+        </div>
+      </div>
+      <textarea class="si-note" style="margin-top:14px;width:100%;" placeholder="宏观备注（选填）..." id="note-macro"></textarea>
+    </div>
+
+  </div><!-- /macro -->
+
+
+  <!-- ══════════════════════════════
+       数据录入
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-input">
+
+    <!-- 每日行情数据 -->
+    <div class="form-section">
+      <div class="fs-title">📝 录入今日数据</div>
+      <div class="fs-sub">每日收盘后录入，保存后所有访客可见最新数据</div>
+
+      <div class="section-head" style="margin-top:0;">基本行情</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <div class="form-label">交易日期</div>
+          <div class="form-hint">格式：MM/DD，如 06/13</div>
+          <input class="form-input" type="text" id="f-date" placeholder="06/13">
+        </div>
+        <div class="form-item">
+          <div class="form-label">主力结算价（元/吨）</div>
+          <input class="form-input" type="number" id="f-price-futures" placeholder="14630">
+        </div>
+        <div class="form-item">
+          <div class="form-label">现货价格（元/吨）</div>
+          <div class="form-hint">无锡304冷轧含税</div>
+          <input class="form-input" type="number" id="f-price-spot" placeholder="14085">
+        </div>
+        <div class="form-item">
+          <div class="form-label">基差（元）</div>
+          <div class="form-hint">现货价−期货价，通常为负</div>
+          <input class="form-input" type="number" id="f-basis" placeholder="-545">
+        </div>
+      </div>
+
+      <div class="section-head">仓单&月差</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <div class="form-label">仓单总量（吨）</div>
+          <div class="form-hint">上期所SS合约仓单</div>
+          <input class="form-input" type="number" id="f-warehouse" placeholder="71936">
+        </div>
+        <div class="form-item">
+          <div class="form-label">月差（元）</div>
+          <div class="form-hint">近月结算价−远月，负=Back</div>
+          <input class="form-input" type="number" id="f-spread" placeholder="-165">
+        </div>
+      </div>
+
+      <div class="section-head">宏观数据</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <div class="form-label">LME镍价（美元/吨）</div>
+          <input class="form-input" type="number" id="f-lme" placeholder="15200">
+        </div>
+        <div class="form-item">
+          <div class="form-label">沪镍主力（元/吨）</div>
+          <input class="form-input" type="number" id="f-sh-nickel" placeholder="121000">
+        </div>
+        <div class="form-item">
+          <div class="form-label">铬铁价格（元/基准吨）</div>
+          <div class="form-hint">每月更新即可</div>
+          <input class="form-input" type="number" id="f-chrome" placeholder="8200">
+        </div>
+        <div class="form-item">
+          <div class="form-label">美元指数</div>
+          <input class="form-input" type="number" step="0.01" id="f-usd" placeholder="104.5">
+        </div>
+        <div class="form-item">
+          <div class="form-label">沪铜主力（元/吨）</div>
+          <input class="form-input" type="number" id="f-copper" placeholder="78000">
+        </div>
+        <div class="form-item">
+          <div class="form-label">制造业PMI</div>
+          <div class="form-hint">每月1日更新</div>
+          <input class="form-input" type="number" step="0.1" id="f-pmi" placeholder="49.5">
+        </div>
+      </div>
+
+      <div class="section-head">今日手动评分</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <div class="form-label">基本面综合分（-2~+2）</div>
+          <input class="form-input" type="number" step="0.5" min="-2" max="2" id="f-score-basis" placeholder="0">
+        </div>
+        <div class="form-item">
+          <div class="form-label">宏观面综合分（-2~+2）</div>
+          <input class="form-input" type="number" step="0.5" min="-2" max="2" id="f-score-macro" placeholder="0">
+        </div>
+        <div class="form-item">
+          <div class="form-label">今日市场简评</div>
+          <input class="form-input" type="text" id="f-note" placeholder="简短备注（选填）">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-save" onclick="saveDaily()">保存今日数据</button>
+        <button class="btn-reset" onclick="resetForm()">重置</button>
+        <span class="save-msg" id="save-msg" style="display:none;">✓ 已保存</span>
+      </div>
+
+      <!-- 保存说明 -->
+      <div style="margin-top:16px;padding:12px 14px;background:var(--c-blue-l);border-radius:8px;font-size:12px;color:var(--c-blue);line-height:1.7;">
+        <b>如何让所有人看到最新数据？</b><br>
+        保存后会生成一个 <code>data.json</code> 文件内容。将其提交到你的 GitHub 仓库，网页就会自动读取最新数据。<br>
+        具体步骤：打开 <a href="https://github.com" target="_blank" style="color:var(--c-blue);">GitHub</a> → 进入你的仓库 → 上传/编辑 data.json → 保存。
+      </div>
+    </div>
+
+    <!-- 预览JSON -->
+    <div class="form-section">
+      <div class="fs-title">生成的数据预览</div>
+      <div class="fs-sub">复制以下内容替换仓库中的 data.json</div>
+      <textarea id="json-preview" style="width:100%;height:200px;font-size:11px;font-family:monospace;background:var(--c-bg2);border:1px solid var(--c-border);border-radius:8px;padding:12px;color:var(--c-ink2);resize:vertical;" readonly placeholder="填写并保存后，JSON将在此显示"></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="btn-save" onclick="copyJSON()" style="background:var(--c-blue);">复制 JSON</button>
+        <button class="btn-reset" onclick="downloadJSON()">下载 data.json</button>
+      </div>
+    </div>
+
+  </div><!-- /input -->
+
+
+  <!-- ══════════════════════════════
+       历史记录
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-history">
+    <div class="analysis-section">
+      <div class="as-head">
+        <div class="as-title">🗂 历史记录</div>
+        <div style="font-size:11px;color:var(--c-ink4);" id="hist-count">加载中...</div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="dtbl">
+          <thead><tr>
+            <th>日期</th><th>期货价</th><th>现货价</th><th>基差</th><th>仓单</th><th>月差</th>
+            <th>资金面</th><th>基本面分</th><th>宏观面分</th><th>LME镍</th><th>美元指数</th><th>备注</th>
+          </tr></thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /history -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ════════════════════════════════════════
+// 全局状态
+// ════════════════════════════════════════
+let DATA = null;
+let CAPITAL = null;
+let manualScores = { basis:0, warehouse:0, spread:0, cost:0, demand:0, finance:0 };
+let chartsInit = {};
+
+const fc = v => v > 0.3 ? 'var(--c-bull)' : v < -0.3 ? 'var(--c-bear)' : 'var(--c-neu)';
+const fbg = v => v > 0.3 ? 'var(--c-bull-l)' : v < -0.3 ? 'var(--c-bear-l)' : 'var(--c-neu-l)';
+const fs = v => (v > 0 ? '+' : '') + (Number.isInteger(v) ? v : (+v).toFixed(2));
+const fn = v => v == null ? '—' : Math.round(v).toLocaleString();
+const fd = v => v == null ? '—' : v;
+const pct = (arr, val) => { const a = arr.filter(x => x != null && x <= val); return a.length / arr.filter(x=>x!=null).length; };
+const avg = (arr, k=5) => { const a = arr.filter(x=>x!=null).slice(-k); return a.reduce((s,v)=>s+v,0)/a.length; };
+
+function verdict(s) {
+  if(s>=1.5) return {t:'强烈看多',d:'多维度共振向上。积极参与累购自营，催促客户尽快点价，可适当放宽报价上沿。',c:'var(--c-bull)',tag:'bull'};
+  if(s>=0.8) return {t:'偏多',    d:'主要维度偏多，买方有优势。关注基差走强节奏，累购客户建议提前点价。',c:'#16a34a',tag:'bull'};
+  if(s>=0.3) return {t:'略偏多',  d:'多头略占优，但分歧较大。维持正常业务节奏，控制自营仓位。',c:'#15803d',tag:'bull'};
+  if(s>=-0.3) return {t:'中性震荡',d:'多空均衡，方向不明。以基差套利主线为主，减少方向性敞口，等待信号。',c:'var(--c-neu)',tag:'neu'};
+  if(s>=-0.8) return {t:'略偏空',  d:'空头略占优，价格有下行压力。关注熔断风险，控制报价区间下沿。',c:'var(--c-gold)',tag:'gold'};
+  if(s>=-1.5) return {t:'偏空',    d:'多维度偏空，价格承压。降低自营仓位，加快累购交货节奏，严控敞口。',c:'#b45309',tag:'gold'};
+  return {t:'强烈看空',d:'系统性下行风险高。暂停自营，严控敞口，优先对冲现有持仓。',c:'var(--c-bear)',tag:'bear'};
+}
+
+function getCapitalScore() { return CAPITAL ? CAPITAL[CAPITAL.length-1].total : 0; }
+
+function getFundamentalScore() {
+  return (manualScores.basis + manualScores.warehouse + manualScores.spread) / 3;
+}
+
+function getMacroScore() {
+  return (manualScores.cost + manualScores.demand + manualScores.finance) / 3;
+}
+
+function getTotalScore() {
+  // 资金面25% + 基本面30% + 宏观面20% + (基差15% + 仓单已含在基本面) 暂简化：
+  // 基本面(基差+仓单+月差) 30% · 资金面 25% · 宏观面 20% · 基差单独 15% · 仓单单独 10%
+  // 实际：五维度
+  const cap = getCapitalScore();
+  const basis = manualScores.basis;
+  const warehouse = manualScores.warehouse;
+  const spread = manualScores.spread;
+  const macro = (manualScores.cost + manualScores.demand + manualScores.finance) / 3;
+  return cap*0.25 + basis*0.20 + warehouse*0.15 + spread*0.10 + macro*0.20 + (basis+warehouse+spread)/3*0.10;
+}
+
+// ════════════════════════════════════════
+// 数据加载
+// ════════════════════════════════════════
+async function loadData() {
+  try {
+    const r = await fetch('data.json?t=' + Date.now());
+    DATA = await r.json();
+    document.getElementById('tb-updated').textContent = '最后更新：' + (DATA.meta?.last_updated || '未知');
+  } catch(e) {
+    console.warn('data.json未找到，使用内置示例数据');
+    DATA = BUILTIN_DATA;
+  }
+  try {
+    const r2 = await fetch('capital.json?t=' + Date.now());
+    CAPITAL = await r2.json();
+  } catch(e) {
+    CAPITAL = BUILTIN_CAPITAL;
+  }
+  document.getElementById('loading-bar').style.opacity = '0';
+  document.getElementById('tb-date').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+  renderOverview();
+  renderCapHist();
+  renderHistory();
+}
+
+// ════════════════════════════════════════
+// 综合评分渲染
+// ════════════════════════════════════════
+function renderOverview() {
+  const total = getTotalScore();
+  const v = verdict(total);
+  const capScore = getCapitalScore();
+  const latest = DATA.daily[DATA.daily.length - 1] || {};
+
+  // 主卡
+  const ring = document.getElementById('sh-ring');
+  ring.style.color = v.c; ring.style.borderColor = v.c;
+  document.getElementById('sh-num').textContent = fs(Math.round(total*10)/10);
+  document.getElementById('sh-verdict').textContent = v.t;
+  document.getElementById('sh-verdict').style.color = v.c;
+  document.getElementById('sh-desc').textContent = v.d;
+  document.getElementById('sh-meta').textContent = `数据截至 ${latest.ds || '—'} · 资金面自动 · 其他维度手动评分`;
+  document.getElementById('sh-kpis').innerHTML = [
+    {v: fs(capScore), l:'资金面', c:fc(capScore)},
+    {v: latest.basis != null ? latest.basis+'元' : '—', l:'基差', c: latest.basis!=null&&latest.basis>-100?'var(--c-bull)':latest.basis!=null&&latest.basis<-400?'var(--c-bear)':'var(--c-ink2)'},
+    {v: latest.warehouse != null ? (latest.warehouse/10000).toFixed(1)+'万吨' : '—', l:'仓单', c:'var(--c-ink2)'},
+    {v: latest.spread != null ? latest.spread+'元' : '—', l:'月差', c: latest.spread!=null&&latest.spread<0?'var(--c-bull)':'var(--c-ink2)'},
+  ].map(k=>`<div class="kpi"><div class="kpi-v" style="color:${k.c}">${k.v}</div><div class="kpi-l">${k.l}</div></div>`).join('');
+
+  // 五维度条
+  const fundScore = getFundamentalScore();
+  const macroScore = getMacroScore();
+  const dims = [
+    {name:'资金面', sub:'龙虎榜自动', score:capScore, wt:0.25, auto:true},
+    {name:'基差',   sub:'历史分位', score:manualScores.basis, wt:0.20, auto:false},
+    {name:'仓单',   sub:'历史分位', score:manualScores.warehouse, wt:0.15, auto:false},
+    {name:'月差结构',sub:'近远价差', score:manualScores.spread, wt:0.10, auto:false},
+    {name:'宏观面', sub:'成本/需求/金融', score:macroScore, wt:0.20, auto:false},
+  ];
+  document.getElementById('dim-rows').innerHTML = dims.map(d => {
+    const color = fc(d.score);
+    const pct50 = 50;
+    const filled = Math.abs(d.score) / 2 * 50;
+    const left = d.score >= 0 ? pct50 : pct50 - filled;
+    const width = filled;
+    return `<div class="dim-row">
+      <div><div class="dr-name">${d.name} ${d.auto?'<span style="font-size:9px;padding:1px 5px;background:var(--c-blue-l);color:var(--c-blue);border-radius:8px;">自动</span>':''}</div><div class="dr-sub">${d.sub}</div></div>
+      <div class="bar-track"><div class="bar-mid"></div><div class="bar-fill" style="left:${left}%;width:${width}%;background:${color};opacity:.7;"></div></div>
+      <div class="dr-wt">${Math.round(d.wt*100)}%</div>
+      <div class="dr-score" style="color:${color}">${fs(d.score)}</div>
+    </div>`;
+  }).join('');
+
+  // 快速KPI
+  const bp = latest.basis != null ? pct(DATA.daily.map(d=>d.basis), latest.basis) : null;
+  const wp = latest.warehouse != null ? pct(DATA.daily.map(d=>d.warehouse), latest.warehouse) : null;
+  document.getElementById('quick-kpis').innerHTML = [
+    {l:'基差', v: latest.basis != null ? latest.basis+'元' : '—', s: bp!=null?`历史${(bp*100).toFixed(0)}%分位`:'', c: latest.basis!=null&&latest.basis>-100?'var(--c-bull)':latest.basis!=null&&latest.basis<-400?'var(--c-bear)':'var(--c-ink)'},
+    {l:'仓单', v: latest.warehouse != null ? (latest.warehouse/10000).toFixed(1)+'万吨' : '—', s: wp!=null?`历史${(wp*100).toFixed(0)}%分位`:'', c: wp!=null&&wp>0.8?'var(--c-bear)':wp!=null&&wp<0.3?'var(--c-bull)':'var(--c-ink)'},
+    {l:'月差', v: latest.spread != null ? (latest.spread>0?'+':'')+latest.spread+'元' : '—', s: latest.spread<0?'Back（现货强）':'Contango（期货强）', c: latest.spread!=null&&latest.spread<-80?'var(--c-bull)':'var(--c-ink)'},
+    {l:'期货价', v: latest.price_futures != null ? fn(latest.price_futures)+'元' : '—', s: `主力结算`, c:'var(--c-ink)'},
+  ].map(k=>`<div class="kpi-card"><div class="kc-label">${k.l}</div><div class="kc-val" style="color:${k.c}">${k.v}</div><div class="kc-sub">${k.s}</div></div>`).join('');
+
+  // 综合评分走势图
+  renderOverviewChart();
+
+  // 操作建议
+  renderActionCard(total, v, latest);
+
+  // 维度badge更新
+  document.getElementById('dim-total-badge') && (document.getElementById('dim-total-badge').textContent = fs(Math.round(total*10)/10));
+}
+
+function renderActionCard(total, v, latest) {
+  const tag = document.getElementById('action-tag');
+  tag.textContent = v.t;
+  tag.className = 'tag tag-' + v.tag;
+
+  let actions = [];
+  if(total >= 0.8) {
+    actions = ['📈 报价区间可适当上移，追价空间扩大','⏰ 主动催促持有浮仓客户尽快点价，避免踏空','💰 自营累购机会窗口，关注基差进一步走强信号','🔄 现货出货节奏可放慢，等待更高点价空间'];
+  } else if(total >= 0.3) {
+    actions = ['📊 维持正常报价节奏，不宜激进追涨','⚖️ 自营仓位控制在日常水平，观察方向确认','📞 对已有累购客户可适度引导，无需急于催促'];
+  } else if(total >= -0.3) {
+    actions = ['⚖️ 多空均衡，以基差套利为主线','🚫 减少方向性自营敞口，等待明确信号','📋 关注基差和仓单数据变化，作为方向判断依据'];
+  } else {
+    actions = ['⬇️ 报价区间下移，控制下沿风险','🏃 加快累购交货节奏，降低库存风险','🛑 暂停或减少自营建仓，严控敞口','📉 关注下方支撑位，若仓单持续累积需更谨慎'];
+  }
+  document.getElementById('action-content').innerHTML = actions.map(a=>`<div style="margin-bottom:6px;">${a}</div>`).join('');
+}
+
+function renderOverviewChart() {
+  if(chartsInit['overview'] || !CAPITAL) return;
+  chartsInit['overview'] = true;
+  const labels = CAPITAL.map(c=>c.ds);
+  const scores = CAPITAL.map(c=>c.total);
+  const GC = 'rgba(0,0,0,0.05)';
+  const opts = {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:10},color:'#a1a1aa'},grid:{display:false},border:{color:'transparent'}},
+            y:{ticks:{font:{size:10},color:'#a1a1aa'},grid:{color:GC},border:{color:'transparent'}}}};
+  const el = document.getElementById('c-overview-score');
+  if(el) new Chart(el, {type:'line',data:{labels,datasets:[
+    {data:scores,borderColor:'#2563eb',borderWidth:2,pointRadius:0,tension:.3,fill:{target:'origin',above:'rgba(37,99,235,.07)',below:'rgba(220,38,38,.07)'}},
+  ]},options:opts});
+}
+
+// ════════════════════════════════════════
+// 基本面渲染
+// ════════════════════════════════════════
+function renderFundamental() {
+  if(!DATA) return;
+  const daily = DATA.daily;
+  const latest = daily[daily.length-1] || {};
+  const basisArr = daily.map(d=>d.basis).filter(x=>x!=null);
+  const whArr = daily.map(d=>d.warehouse).filter(x=>x!=null);
+  const spreadArr = daily.map(d=>d.spread).filter(x=>x!=null);
+  const labels = daily.map(d=>d.ds);
+
+  // 快照
+  const bp = basisArr.length ? pct(basisArr, latest.basis) : null;
+  const wp = whArr.length ? pct(whArr, latest.warehouse) : null;
+  const wh5 = whArr.length >= 5 ? latest.warehouse - whArr[whArr.length-6] : null;
+  const basis5 = basisArr.length >= 5 ? latest.basis - basisArr[basisArr.length-6] : null;
+  document.getElementById('fund-stats').innerHTML = [
+    {l:'基差', v: latest.basis!=null?latest.basis+'元':'—', s: bp!=null?`历史${(bp*100).toFixed(0)}%分位`:'', c: latest.basis!=null&&latest.basis>-100?'var(--c-bull)':latest.basis!=null&&latest.basis<-400?'var(--c-bear)':'var(--c-ink)'},
+    {l:'5日基差变化', v: basis5!=null?(basis5>0?'+':'')+Math.round(basis5)+'元':'—', s:'', c: basis5!=null&&basis5>30?'var(--c-bull)':basis5!=null&&basis5<-30?'var(--c-bear)':'var(--c-ink)'},
+    {l:'仓单', v: latest.warehouse!=null?(latest.warehouse/10000).toFixed(1)+'万吨':'—', s: wp!=null?`历史${(wp*100).toFixed(0)}%分位`:'', c: wp!=null&&wp>0.8?'var(--c-bear)':wp!=null&&wp<0.3?'var(--c-bull)':'var(--c-ink)'},
+    {l:'5日仓单变化', v: wh5!=null?(wh5>0?'+':'')+Math.round(wh5/1000).toFixed(1)+'k吨':'—', s:'', c: wh5!=null&&wh5<-3000?'var(--c-bull)':wh5!=null&&wh5>3000?'var(--c-bear)':'var(--c-ink)'},
+    {l:'月差', v: latest.spread!=null?latest.spread+'元':'—', s: latest.spread!=null&&latest.spread<0?'Back结构（偏多）':'Contango结构', c: latest.spread!=null&&latest.spread<-80?'var(--c-bull)':'var(--c-ink)'},
+    {l:'期货价', v: latest.price_futures!=null?fn(latest.price_futures)+'元':'—', s:'主力结算价', c:'var(--c-ink)'},
+  ].map(k=>`<div class="stat-box"><div class="sb-l">${k.l}</div><div class="sb-v" style="color:${k.c}">${k.v}</div><div class="sb-s">${k.s}</div></div>`).join('');
+
+  // 基差分位可视化
+  if(bp != null) {
+    const bpColor = bp<0.3?'var(--c-bull)':bp>0.7?'var(--c-bear)':'var(--c-gold)';
+    document.getElementById('basis-pct-badge').textContent = (bp*100).toFixed(0)+'%分位';
+    document.getElementById('basis-pct-badge').className = 'tag ' + (bp<0.3?'tag-bull':bp>0.7?'tag-bear':'tag-gold');
+    document.getElementById('basis-pct-vis').innerHTML = `
+      <div class="pct-bar"><div class="pct-fill" style="width:${bp*100}%;background:${bpColor};"></div></div>
+      <div class="pct-label"><span>历史最弱</span><span>中位</span><span>历史最强</span></div>
+    `;
+    document.getElementById('basis-analysis').innerHTML = `
+      当前基差 <b>${latest.basis}元</b>，处于历史 <b>${(bp*100).toFixed(0)}%</b> 分位。
+      ${bp<0.2?'<b style="color:var(--c-bull)">基差偏强（高分位），现货相对强势，有利于持有现货的套保需求</b>':
+        bp>0.7?'<b style="color:var(--c-bear)">基差偏弱（低分位），现货相对弱势，期货升水明显</b>':
+        '基差处于历史中等水平，无明显强弱偏向。'}
+      ${basis5!=null?`近5日基差变化 <b style="color:${basis5>0?'var(--c-bull)':'var(--c-bear)'}">${basis5>0?'+':''}${Math.round(basis5)}元</b>，趋势${basis5>30?'走强（偏多）':basis5<-30?'走弱（偏空）':'基本平稳'}。`:''}
+    `;
+  }
+
+  // 仓单分位
+  if(wp != null) {
+    const wpColor = wp>0.8?'var(--c-bear)':wp<0.3?'var(--c-bull)':'var(--c-gold)';
+    document.getElementById('wh-pct-badge').textContent = (wp*100).toFixed(0)+'%分位';
+    document.getElementById('wh-pct-badge').className = 'tag ' + (wp>0.8?'tag-bear':wp<0.3?'tag-bull':'tag-gold');
+    document.getElementById('wh-pct-vis').innerHTML = `
+      <div class="pct-bar"><div class="pct-fill" style="width:${wp*100}%;background:${wpColor};"></div></div>
+      <div class="pct-label"><span>历史最低</span><span>中位</span><span>历史最高</span></div>
+    `;
+    document.getElementById('wh-analysis').innerHTML = `
+      当前仓单 <b>${(latest.warehouse/10000).toFixed(1)}万吨</b>，历史 <b>${(wp*100).toFixed(0)}%</b> 分位。
+      ${wp>0.8?'<b style="color:var(--c-bear)">仓单处于历史高位，现货供给充裕，对价格形成压制</b>':
+        wp<0.3?'<b style="color:var(--c-bull)">仓单处于历史低位，交割品稀缺，对价格有支撑</b>':
+        '仓单处于历史中等水平。'}
+      ${wh5!=null?`近5日净${wh5>0?'增':'减'} <b style="color:${wh5>0?'var(--c-bear)':'var(--c-bull)'}">${Math.abs(Math.round(wh5/1000)).toFixed(1)}k吨</b>，${wh5>3000?'累库速度较快，警惕压价风险':wh5<-3000?'快速去库，偏多信号':'变化温和'}。`:''}
+    `;
+  }
+
+  // 月差分析
+  document.getElementById('spread-badge').textContent = latest.spread!=null?(latest.spread<0?'Back结构':'Contango'):'—';
+  document.getElementById('spread-badge').className = 'tag ' + (latest.spread!=null&&latest.spread<-60?'tag-bull':latest.spread!=null&&latest.spread>0?'tag-bear':'tag-gold');
+  document.getElementById('spread-analysis').innerHTML = `
+    <div style="font-size:12px;color:var(--c-ink2);line-height:1.8;">
+      <div><b>当前月差：${latest.spread!=null?latest.spread+'元':'—'}</b></div>
+      <div style="margin-top:6px;">${latest.spread!=null&&latest.spread<0?
+        `Back结构（近月升水远月），反映现货紧俏。月差 <b>${latest.spread}元</b>，Back幅度${Math.abs(latest.spread)>100?'较大，现货明显强势':'适中'}。这通常是做多信号，套利资金会买近月平远月，支撑近月价格。`:
+        `Contango结构（远月升水近月），反映近期供给充裕。月差 <b>${latest.spread}元</b>，市场预期远期价格更高，当前现货相对弱势。`}
+      </div>
+    </div>
+  `;
+
+  // 相关性
+  const basisData = daily.map(d=>d.basis).filter(x=>x!=null);
+  const whData = daily.map(d=>d.warehouse).filter(x=>x!=null);
+  const priceData = daily.map(d=>d.price_futures).filter(x=>x!=null);
+  function corr(x,y){const n=Math.min(x.length,y.length);if(n<3)return 0;const mx=x.slice(0,n).reduce((a,b)=>a+b,0)/n,my=y.slice(0,n).reduce((a,b)=>a+b,0)/n;const num=x.slice(0,n).reduce((a,b,i)=>a+(b-mx)*(y[i]-my),0);const den=Math.sqrt(x.slice(0,n).reduce((a,b)=>a+(b-mx)**2,0)*y.slice(0,n).reduce((a,b)=>a+(b-my)**2,0));return den?num/den:0;}
+  const corrBasisPrice = corr(basisData, priceData);
+  const corrWhPrice = corr(whData, priceData);
+  const corrCapPrice = CAPITAL ? corr(CAPITAL.map(c=>c.total), CAPITAL.map(c=>c.price||0)) : 0;
+  document.getElementById('corr-section').innerHTML = `
+    <div style="margin-bottom:8px;font-size:11px;color:var(--c-ink4);">皮尔逊相关系数，绝对值>0.5为显著相关</div>
+    ${[
+      {l:'基差 vs 期货价', v:corrBasisPrice},
+      {l:'仓单 vs 期货价', v:corrWhPrice},
+      {l:'资金面得分 vs 价格', v:corrCapPrice},
+    ].map(c=>{
+      const color = Math.abs(c.v)>0.5?'var(--c-blue)':'var(--c-ink4)';
+      const w = Math.abs(c.v)*100;
+      return `<div class="corr-row">
+        <div class="corr-l">${c.l}</div>
+        <div class="corr-track"><div class="corr-fill" style="width:${w}%;background:${color};height:100%;"></div></div>
+        <div class="corr-v" style="color:${color}">${c.v>0?'+':''}${c.v.toFixed(3)}</div>
+      </div>`;
+    }).join('')}
+  `;
+
+  // 图表
+  if(!chartsInit['fund'] && DATA) {
+    chartsInit['fund'] = true;
+    const lbl = daily.map(d=>d.ds);
+    const GC='rgba(0,0,0,0.05)';
+    const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:10},color:'#a1a1aa'},grid:{display:false},border:{color:'transparent'}},y:{ticks:{font:{size:10},color:'#a1a1aa'},grid:{color:GC},border:{color:'transparent'}}}};
+    const mk=(id,data,color,fill=false)=>{const el=document.getElementById(id);if(el)new Chart(el,{type:'line',data:{labels:lbl,datasets:[{data,borderColor:color,borderWidth:2,pointRadius:0,tension:.3,fill:fill?{target:'origin',above:color+'15',below:color+'15'}:false}]},options:baseOpts});};
+    mk('c-basis', daily.map(d=>d.basis), '#2563eb', true);
+    mk('c-warehouse', daily.map(d=>d.warehouse), '#dc2626', true);
+    mk('c-spread', daily.map(d=>d.spread), '#7c3aed', true);
+  }
+}
+
+// ════════════════════════════════════════
+// 资金面渲染
+// ════════════════════════════════════════
+function renderCapital() {
+  if(!CAPITAL) return;
+  const latest = CAPITAL[CAPITAL.length-1];
+  const total = latest.total;
+  const color = fc(total);
+
+  document.getElementById('cap-total-badge').textContent = fs(total) + ' · ' + latest.verdict;
+  document.getElementById('cap-total-badge').style.background = fbg(total);
+  document.getElementById('cap-total-badge').style.color = color;
+
+  // 六指标卡
+  const factors = [
+    {name:'① 高盛净多变化', score:latest.s1, wt:'35%', val:fn(latest.gs_net)+'手', sub:'外资核心指标', hint:latest.gs_net>8000?'重仓做多':latest.gs_net>5000?'维持多头':'注意仓位变化', trend:CAPITAL.map(c=>c.s1).slice(-8)},
+    {name:'② 大型空头方向', score:latest.s2, wt:'25%', val:latest.short_sum===0?'空头全退':'净空'+fn(Math.abs(latest.short_sum))+'手', sub:'国泰君安+国投+国贸', hint:latest.short_sum===0?'大空头已全部回补':latest.short_sum>-3000?'空头大幅萎缩':'大型空头仍维持', trend:CAPITAL.map(c=>c.s2).slice(-8)},
+    {name:'③ 总净差方向', score:latest.s3, wt:'20%', val:(latest.net>0?'+':'')+fn(latest.net)+'手', sub:'所有合约买-卖', hint:latest.net>5000?'买方强势':latest.net>0?'买方略占优':'卖方占优', trend:CAPITAL.map(c=>c.s3).slice(-8)},
+    {name:'④ 外资合力', score:latest.s4, wt:'10%', val:fn(latest.foreign)+'手', sub:'高盛+瑞银合计', hint:latest.foreign>12000?'外资重仓':latest.foreign>8000?'外资标配':'外资偏低', trend:null},
+    {name:'⑤ 主力合约净差', score:latest.s5, wt:'5%', val:latest.s5===1?'强于总体':latest.s5===-1?'弱于总体':'基本一致', sub:'主力合约纯净度', hint:'', trend:null},
+    {name:'⑥ 持仓量变化', score:latest.s6, wt:'5%', val:latest.s6===1?'放量增仓':latest.s6===-1?'缩量减仓':'持平', sub:'新资金入场信号', hint:'', trend:null},
+  ];
+  document.getElementById('cap-cards').innerHTML = factors.map(f=>{
+    const c = fc(f.score);
+    const trendDots = f.trend ? `<div class="cap-trend">${f.trend.map(v=>{
+      const dc=v>0?'var(--c-bull)':v<0?'var(--c-bear)':'var(--c-neu)';
+      const dbg=v>0?'var(--c-bull-l)':v<0?'var(--c-bear-l)':'var(--c-neu-l)';
+      return `<div class="kc-dot" style="background:${dbg};color:${dc}">${v>0?'↑':v<0?'↓':'·'}</div>`;
+    }).join('')}<span style="font-size:10px;color:var(--c-ink4);margin-left:3px;align-self:center;">近8日</span></div>` : '';
+    return `<div class="cap-card">
+      <div class="cap-head"><div class="cap-name">${f.name} <span style="color:var(--c-ink4);font-size:9px;">权重${f.wt}</span></div><div class="cap-score" style="color:${c}">${fs(f.score)}</div></div>
+      <div class="cap-val" style="color:${c}">${f.val}</div>
+      <div class="cap-sub">${f.sub}</div>
+      ${f.hint?`<div class="cap-hint" style="color:${c}">${f.hint}</div>`:''}
+      ${trendDots}
+    </div>`;
+  }).join('');
+
+  // 历史表格
+  document.getElementById('cap-hist-body').innerHTML = CAPITAL.map(s=>{
+    const c = fc(s.total);
+    return `<tr>
+      <td>${s.ds}</td>
+      <td style="font-weight:700;color:${c}">${fs(s.total)}</td>
+      <td><span class="tag ${s.total>0.5?'tag-bull':s.total<-0.5?'tag-bear':'tag-neu'}">${s.verdict}</span></td>
+      <td style="color:${fc(s.s1)}">${fs(s.s1)}</td>
+      <td style="color:${fc(s.s2)}">${fs(s.s2)}</td>
+      <td style="color:${fc(s.s3)}">${fs(s.s3)}</td>
+      <td style="color:${fc(s.s4)}">${fs(s.s4)}</td>
+      <td style="color:${s.gs_net>8000?'var(--c-bull)':'var(--c-ink2)'}">${fn(s.gs_net)}</td>
+      <td style="color:${s.net>0?'var(--c-bull)':s.net<0?'var(--c-bear)':'var(--c-neu)'}">${(s.net>0?'+':'')+fn(s.net)}</td>
+      <td>${s.price?fn(s.price):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // 图表
+  if(!chartsInit['capital']) {
+    chartsInit['capital'] = true;
+    const lbl = CAPITAL.map(c=>c.ds);
+    const GC='rgba(0,0,0,0.05)';
+    const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:10},color:'#a1a1aa'},grid:{display:false},border:{color:'transparent'}},y:{ticks:{font:{size:10},color:'#a1a1aa'},grid:{color:GC},border:{color:'transparent'}}}};
+    const mk=(id,data,color,fill)=>{const el=document.getElementById(id);if(el)new Chart(el,{type:'line',data:{labels:lbl,datasets:[{data,borderColor:color,borderWidth:2,pointRadius:0,tension:.3,fill:fill?{target:'origin',above:color+'12',below:color+'12'}:false}]},options:opts});};
+    mk('c-cap-score', CAPITAL.map(c=>c.total), '#2563eb', true);
+    mk('c-gs', CAPITAL.map(c=>c.gs_net), '#16a34a', true);
+    mk('c-net', CAPITAL.map(c=>c.net), '#2563eb', true);
+    mk('c-foreign', CAPITAL.map(c=>c.foreign), '#7c3aed', true);
+  }
+}
+
+// ════════════════════════════════════════
+// 宏观面渲染
+// ════════════════════════════════════════
+function renderMacro() {
+  if(!DATA) return;
+  const latest = DATA.daily[DATA.daily.length-1] || {};
+
+  const macros = [
+    {name:'LME镍价', val:latest.lme_nickel, unit:'$/t', impact:'⭐⭐⭐⭐⭐', note:'不锈钢304最大成本驱动，占成本30-35%'},
+    {name:'沪镍主力', val:latest.sh_nickel, unit:'元/t', impact:'⭐⭐⭐⭐⭐', note:'国内定价更直接'},
+    {name:'铬铁价格', val:latest.chrome, unit:'元/基准吨', impact:'⭐⭐⭐⭐', note:'占不锈钢成本约15-20%'},
+    {name:'美元指数', val:latest.usd_index, unit:'', impact:'⭐⭐⭐', note:'美元强则大宗商品普遍承压'},
+    {name:'沪铜主力', val:latest.copper, unit:'元/t', impact:'⭐⭐⭐', note:'大宗商品风向标，铜强则情绪好'},
+    {name:'制造业PMI', val:latest.pmi, unit:'', impact:'⭐⭐⭐', note:latest.pmi!=null?(latest.pmi>=50?'扩张区间，需求端利好':'收缩区间，需求端利空'):'月度数据'},
+  ];
+  document.getElementById('macro-cards').innerHTML = macros.map(m=>{
+    const hasVal = m.val != null;
+    const pmiColor = m.name==='制造业PMI'&&hasVal?(m.val>=50?'var(--c-bull)':'var(--c-bear)'):'var(--c-ink)';
+    return `<div class="macro-card">
+      <div class="mc-head">
+        <div class="mc-name">${m.name}</div>
+        <div class="mc-impact" style="background:var(--c-gold-l);color:var(--c-gold)">${m.impact}</div>
+      </div>
+      ${hasVal?
+        `<div class="mc-val" style="color:${pmiColor}">${m.name==='美元指数'?m.val.toFixed(1):fn(m.val)}<span class="mc-unit">${m.unit}</span></div>`:
+        `<div class="mc-empty">未录入</div>`}
+      <div class="mc-note">${m.note}</div>
+    </div>`;
+  }).join('');
+
+  // 成本分析
+  const hasNickel = latest.sh_nickel != null;
+  const hasChrome = latest.chrome != null;
+  const hasFutures = latest.price_futures != null;
+  if(hasNickel || hasChrome) {
+    // 304 = 约72% iron + 18% Cr + 8% Ni（按重量），加工费约1200-1500
+    const nickelCost = hasNickel ? latest.sh_nickel * 0.08 / 1000 : null;
+    const chromeCost = hasChrome ? latest.chrome * 0.18 : null;
+    const ironCost = 3200; // 假设铁水/废钢成本约3200元/吨
+    const processCost = 1500;
+    let totalCost = ironCost + processCost;
+    if(nickelCost) totalCost += nickelCost;
+    if(chromeCost) totalCost += chromeCost;
+    const priceVsCost = hasFutures ? latest.price_futures - totalCost : null;
+    document.getElementById('cost-section').innerHTML = `
+      <div class="stat-row">
+        ${nickelCost?`<div class="stat-box"><div class="sb-l">镍成本贡献</div><div class="sb-v">${Math.round(nickelCost)}元/吨</div><div class="sb-s">沪镍×8%含量</div></div>`:''}
+        ${chromeCost?`<div class="stat-box"><div class="sb-l">铬成本贡献</div><div class="sb-v">${Math.round(chromeCost)}元/吨</div><div class="sb-s">铬铁×18%含量</div></div>`:''}
+        <div class="stat-box"><div class="sb-l">铁/废钢+加工</div><div class="sb-v">≈${Math.round(ironCost+processCost)}元/吨</div><div class="sb-s">估算参考值</div></div>
+        <div class="stat-box" style="border-color:${priceVsCost!=null&&priceVsCost<0?'var(--c-bull-l)':'var(--c-border)'}">
+          <div class="sb-l">理论综合成本</div>
+          <div class="sb-v" style="color:var(--c-blue)">≈${Math.round(totalCost)}元/吨</div>
+          <div class="sb-s">镍+铬+铁+加工估算</div>
+        </div>
+        ${priceVsCost!=null?`<div class="stat-box">
+          <div class="sb-l">期货价-成本</div>
+          <div class="sb-v" style="color:${priceVsCost>0?'var(--c-bear)':priceVsCost<-200?'var(--c-bull)':'var(--c-ink)'}">
+            ${priceVsCost>0?'+':''}${Math.round(priceVsCost)}元
+          </div>
+          <div class="sb-s">${priceVsCost>500?'成本利润丰厚，钢厂有产量扩张动力':priceVsCost<-200?'价格低于成本，存在减产/停产预期，下跌空间有限':'接近成本，关注产量变化'}</div>
+        </div>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--c-ink4);padding:8px 0;">⚠️ 成本估算为参考值，实际成本因钢厂、工艺、原料采购时点而有所差异</div>
+    `;
+  } else {
+    document.getElementById('cost-section').innerHTML = '<div class="empty">录入沪镍和铬铁价格后自动计算</div>';
+  }
+
+  // 图表（宏观数据积累后才有意义）
+  if(!chartsInit['macro'] && DATA) {
+    chartsInit['macro'] = true;
+    const lbl = DATA.daily.map(d=>d.ds);
+    const GC='rgba(0,0,0,0.05)';
+    const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,maxRotation:0,font:{size:10},color:'#a1a1aa'},grid:{display:false},border:{color:'transparent'}},y:{ticks:{font:{size:10},color:'#a1a1aa'},grid:{color:GC},border:{color:'transparent'}}}};
+    const mk=(id,data,color)=>{const el=document.getElementById(id);if(el)new Chart(el,{type:'line',data:{labels:lbl,datasets:[{data,borderColor:color,borderWidth:2,pointRadius:0,tension:.3}]},options:opts});};
+    mk('c-lme', DATA.daily.map(d=>d.lme_nickel), '#b45309');
+    mk('c-usd', DATA.daily.map(d=>d.usd_index), '#2563eb');
+  }
+
+  const macroScore = getMacroScore();
+  document.getElementById('macro-score-badge').textContent = fs(macroScore);
+  document.getElementById('macro-score-badge').style.background = fbg(macroScore);
+  document.getElementById('macro-score-badge').style.color = fc(macroScore);
+}
+
+// ════════════════════════════════════════
+// 手动评分输入
+// ════════════════════════════════════════
+function setScore(id, val) {
+  manualScores[id] = val;
+  const color = fc(val);
+  ['','2'].forEach(sfx => {
+    const el = document.getElementById('sv-'+id+sfx);
+    if(el) { el.textContent = fs(val); el.style.color = color; }
+  });
+  // 更新badges
+  const fundScore = (manualScores.basis + manualScores.warehouse + manualScores.spread) / 3;
+  const macroScore = (manualScores.cost + manualScores.demand + manualScores.finance) / 3;
+  const fb = document.getElementById('fund-manual-badge');
+  if(fb) { fb.textContent = fs(fundScore); fb.style.background = fbg(fundScore); fb.style.color = fc(fundScore); }
+  const mb = document.getElementById('macro-manual-badge');
+  if(mb) { mb.textContent = fs(macroScore); mb.style.background = fbg(macroScore); mb.style.color = fc(macroScore); }
+  // 更新综合评分
+  renderOverview();
+}
+
+// ════════════════════════════════════════
+// 历史记录
+// ════════════════════════════════════════
+function renderHistory() {
+  if(!DATA) return;
+  const daily = DATA.daily;
+  document.getElementById('hist-count').textContent = `共 ${daily.length} 条记录`;
+  document.getElementById('hist-body').innerHTML = [...daily].reverse().map(d => `<tr>
+    <td>${d.ds}</td>
+    <td class="mono">${d.price_futures!=null?fn(d.price_futures):'—'}</td>
+    <td class="mono">${d.price_spot!=null?fn(d.price_spot):'—'}</td>
+    <td class="mono" style="color:${d.basis!=null&&d.basis>-100?'var(--c-bull)':d.basis!=null&&d.basis<-400?'var(--c-bear)':'var(--c-ink2)'}">${d.basis!=null?d.basis:'—'}</td>
+    <td class="mono">${d.warehouse!=null?(d.warehouse/10000).toFixed(1)+'w':'—'}</td>
+    <td class="mono" style="color:${d.spread!=null&&d.spread<-80?'var(--c-bull)':'var(--c-ink2)'}">${d.spread!=null?d.spread:'—'}</td>
+    <td class="mono" style="color:${d.capital_score!=null?fc(d.capital_score):'var(--c-ink4)'}">${d.capital_score!=null?fs(d.capital_score):'—'}</td>
+    <td class="mono">${d.score_basis!=null?fs(d.score_basis):'—'}</td>
+    <td class="mono">${d.score_macro!=null?fs(d.score_macro):'—'}</td>
+    <td class="mono">${d.lme_nickel!=null?fn(d.lme_nickel):'—'}</td>
+    <td class="mono">${d.usd_index!=null?d.usd_index.toFixed(1):'—'}</td>
+    <td style="color:var(--c-ink4);font-size:11px;">${d.note||''}</td>
+  </tr>`).join('');
+}
+
+// ════════════════════════════════════════
+// 数据录入
+// ════════════════════════════════════════
+function saveDaily() {
+  const entry = {
+    ds: document.getElementById('f-date').value.trim(),
+    price_futures: +document.getElementById('f-price-futures').value || null,
+    price_spot: +document.getElementById('f-price-spot').value || null,
+    basis: +document.getElementById('f-basis').value || null,
+    warehouse: +document.getElementById('f-warehouse').value || null,
+    spread: +document.getElementById('f-spread').value || null,
+    lme_nickel: +document.getElementById('f-lme').value || null,
+    sh_nickel: +document.getElementById('f-sh-nickel').value || null,
+    chrome: +document.getElementById('f-chrome').value || null,
+    usd_index: +document.getElementById('f-usd').value || null,
+    copper: +document.getElementById('f-copper').value || null,
+    pmi: +document.getElementById('f-pmi').value || null,
+    score_basis: +document.getElementById('f-score-basis').value || null,
+    score_macro: +document.getElementById('f-score-macro').value || null,
+    note: document.getElementById('f-note').value || ''
+  };
+  if(!entry.ds) { alert('请填写日期'); return; }
+  if(!DATA) DATA = {meta:{},daily:[],capital_history:[]};
+  const idx = DATA.daily.findIndex(d=>d.ds===entry.ds);
+  if(idx>=0) DATA.daily[idx] = {...DATA.daily[idx],...entry};
+  else DATA.daily.push(entry);
+  DATA.daily.sort((a,b)=>{const[am,ad]=a.ds.split('/').map(Number),[bm,bd]=b.ds.split('/').map(Number);return am!==bm?am-bm:ad-bd;});
+  DATA.meta.last_updated = entry.ds;
+
+  // 生成JSON预览
+  const jsonStr = JSON.stringify(DATA, null, 2);
+  document.getElementById('json-preview').value = jsonStr;
+
+  const msg = document.getElementById('save-msg');
+  msg.style.display = 'inline';
+  setTimeout(()=>msg.style.display='none', 2000);
+  renderHistory();
+  renderOverview();
+}
+
+function resetForm() {
+  ['f-date','f-price-futures','f-price-spot','f-basis','f-warehouse','f-spread','f-lme','f-sh-nickel','f-chrome','f-usd','f-copper','f-pmi','f-score-basis','f-score-macro','f-note'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+}
+
+function copyJSON() {
+  const text = document.getElementById('json-preview').value;
+  if(!text) { alert('请先保存数据'); return; }
+  navigator.clipboard.writeText(text).then(()=>alert('✓ JSON已复制，请粘贴到GitHub仓库的data.json文件'));
+}
+
+function downloadJSON() {
+  const text = document.getElementById('json-preview').value;
+  if(!text) { alert('请先保存数据'); return; }
+  const blob = new Blob([text], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'data.json'; a.click();
+}
+
+function renderCapHist() { if(CAPITAL) renderCapital(); }
+
+// ════════════════════════════════════════
+// 面板切换
+// ════════════════════════════════════════
+function showPanel(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='fundamental') renderFundamental();
+  if(id==='capital') renderCapital();
+  if(id==='macro') renderMacro();
+  if(id==='history') renderHistory();
+  if(id==='overview') renderOverview();
+}
+
+// ════════════════════════════════════════
+// 内置数据（首次使用或fetch失败时用）
+// ════════════════════════════════════════
+const BUILTIN_DATA = {"meta": {"last_updated": "2026-06-12", "version": "1.0"}, "daily": [{"ds": "04/24", "price_futures": 14305, "price_spot": null, "basis": null, "warehouse": 52125, "spread": null, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.65, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "04/27", "price_futures": 14240, "price_spot": null, "basis": null, "warehouse": 51531, "spread": null, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.3, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "04/28", "price_futures": 14225, "price_spot": null, "basis": null, "warehouse": 51531, "spread": null, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "04/29", "price_futures": 14160, "price_spot": null, "basis": -110, "warehouse": 52075, "spread": -45, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "04/30", "price_futures": 14275, "price_spot": null, "basis": -225, "warehouse": 51953, "spread": -55, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/06", "price_futures": 14150, "price_spot": null, "basis": -150, "warehouse": 51893, "spread": -50, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.3, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/07", "price_futures": 14110, "price_spot": null, "basis": -110, "warehouse": 51655, "spread": -35, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/08", "price_futures": 14240, "price_spot": null, "basis": -190, "warehouse": 51414, "spread": -60, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": -0.05, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/11", "price_futures": 14160, "price_spot": null, "basis": -110, "warehouse": 51238, "spread": -50, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.15, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/12", "price_futures": 14255, "price_spot": null, "basis": -205, "warehouse": 51180, "spread": -55, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.9, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/13", "price_futures": 14270, "price_spot": null, "basis": -220, "warehouse": 52714, "spread": -60, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.9, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/14", "price_futures": 14125, "price_spot": null, "basis": -125, "warehouse": 53902, "spread": -55, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.5, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/15", "price_futures": 14150, "price_spot": null, "basis": -200, "warehouse": 53481, "spread": -60, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.75, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/18", "price_futures": 14055, "price_spot": null, "basis": -155, "warehouse": 40838, "spread": -75, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.7, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/19", "price_futures": 13935, "price_spot": null, "basis": -85, "warehouse": 40838, "spread": -85, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.05, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/20", "price_futures": 14000, "price_spot": null, "basis": -100, "warehouse": 41665, "spread": -75, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.1, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/21", "price_futures": 14085, "price_spot": null, "basis": -135, "warehouse": 43599, "spread": -110, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.05, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/22", "price_futures": 14310, "price_spot": null, "basis": -160, "warehouse": 43537, "spread": -105, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.0, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/25", "price_futures": 14840, "price_spot": null, "basis": -345, "warehouse": 45676, "spread": -100, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": -0.25, "capital_verdict": "中性", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/26", "price_futures": 14795, "price_spot": null, "basis": -375, "warehouse": 45676, "spread": -95, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.05, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/27", "price_futures": 15000, "price_spot": null, "basis": -295, "warehouse": 45676, "spread": -85, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.0, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/28", "price_futures": 15075, "price_spot": null, "basis": -345, "warehouse": 45676, "spread": -115, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "05/29", "price_futures": 14790, "price_spot": null, "basis": -265, "warehouse": 45985, "spread": -115, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": null, "capital_verdict": null, "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/01", "price_futures": 14665, "price_spot": null, "basis": -265, "warehouse": 55202, "spread": -115, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.2, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/02", "price_futures": 14495, "price_spot": null, "basis": -165, "warehouse": 57637, "spread": -100, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.4, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/03", "price_futures": 14400, "price_spot": null, "basis": -225, "warehouse": 58582, "spread": -110, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.25, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/04", "price_futures": 14405, "price_spot": null, "basis": -265, "warehouse": 64098, "spread": -110, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.6, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/05", "price_futures": 14630, "price_spot": null, "basis": -235, "warehouse": 65870, "spread": -90, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 0.8, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/08", "price_futures": 14665, "price_spot": null, "basis": -320, "warehouse": 67887, "spread": -120, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.55, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/09", "price_futures": 14545, "price_spot": null, "basis": -385, "warehouse": 70233, "spread": -135, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.2, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/10", "price_futures": 14530, "price_spot": null, "basis": -405, "warehouse": 70469, "spread": -140, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.4, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/11", "price_futures": 14665, "price_spot": null, "basis": -435, "warehouse": 70296, "spread": -150, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.4, "capital_verdict": "强偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}, {"ds": "06/12", "price_futures": 14630, "price_spot": null, "basis": -545, "warehouse": 71936, "spread": -165, "lme_nickel": null, "sh_nickel": null, "chrome": null, "usd_index": null, "copper": null, "pmi": null, "capital_score": 1.15, "capital_verdict": "偏多", "score_basis": null, "score_warehouse": null, "score_spread": null, "score_macro": null, "note": ""}], "capital_history": [{"ds": "04/24", "price": 14305, "total": 0.65, "verdict": "偏多", "s1": 2, "s2": 0, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 17678, "short_sum": -29418, "net": -13465, "foreign": 21855}, {"ds": "04/27", "price": 14240, "total": 0.3, "verdict": "中性", "s1": 2, "s2": -1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16980, "short_sum": -30481, "net": -13350, "foreign": 19226}, {"ds": "04/28", "price": 14225, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 14334, "short_sum": -31760, "net": -5466, "foreign": 17536}, {"ds": "04/29", "price": 14160, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16209, "short_sum": -31053, "net": -4831, "foreign": 19441}, {"ds": "04/30", "price": 14275, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16299, "short_sum": -35008, "net": -6270, "foreign": 19692}, {"ds": "05/06", "price": 14150, "total": 0.3, "verdict": "中性", "s1": 2, "s2": -1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16290, "short_sum": -36457, "net": -4573, "foreign": 20547}, {"ds": "05/07", "price": 14110, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 15418, "short_sum": -34027, "net": -4700, "foreign": 19619}, {"ds": "05/08", "price": 14240, "total": -0.05, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 1, "s5": -1, "s6": -1, "gs_net": 13524, "short_sum": -28115, "net": -5207, "foreign": 17743}, {"ds": "05/11", "price": 14160, "total": 1.15, "verdict": "偏多", "s1": 2, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 14331, "short_sum": -27284, "net": -6106, "foreign": 18501}, {"ds": "05/12", "price": 14255, "total": 0.9, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 15218, "short_sum": -24704, "net": -2185, "foreign": 19416}, {"ds": "05/13", "price": 14270, "total": 0.9, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 15483, "short_sum": -26002, "net": -3406, "foreign": 19727}, {"ds": "05/14", "price": 14125, "total": 1.5, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": 1, "s6": 0, "gs_net": 14697, "short_sum": -24465, "net": 889, "foreign": 18973}, {"ds": "05/15", "price": 14150, "total": 1.75, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 1, "s5": 1, "s6": 0, "gs_net": 16742, "short_sum": -20032, "net": 314, "foreign": 21033}, {"ds": "05/18", "price": 14055, "total": 1.7, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 1, "s5": 1, "s6": -1, "gs_net": 17142, "short_sum": -20606, "net": 675, "foreign": 21486}, {"ds": "05/19", "price": 13935, "total": 1.05, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": 1, "s6": -1, "gs_net": 13669, "short_sum": -21053, "net": -1442, "foreign": 18039}, {"ds": "05/20", "price": 14000, "total": 1.1, "verdict": "偏多", "s1": 2, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": -1, "gs_net": 10915, "short_sum": -15977, "net": -4457, "foreign": 15294}, {"ds": "05/21", "price": 14085, "total": 0.05, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": -1, "gs_net": 7922, "short_sum": -15822, "net": -2042, "foreign": 12300}, {"ds": "05/22", "price": 14310, "total": 0.0, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 0, "s5": 1, "s6": 0, "gs_net": 6922, "short_sum": -14570, "net": -2229, "foreign": 11296}, {"ds": "05/25", "price": 14840, "total": -0.25, "verdict": "中性", "s1": -1, "s2": 1, "s3": -1, "s4": 0, "s5": 1, "s6": 0, "gs_net": 5232, "short_sum": -14485, "net": -5485, "foreign": 9534}, {"ds": "05/26", "price": 14795, "total": 1.05, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": -1, "s6": 1, "gs_net": 11023, "short_sum": -13556, "net": -177, "foreign": 16168}, {"ds": "05/27", "price": 15000, "total": 1.0, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": -1, "s6": 0, "gs_net": 9698, "short_sum": -12596, "net": -1727, "foreign": 14837}, {"ds": "05/28", "price": 15075, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 11300, "short_sum": -13273, "net": -3220, "foreign": 14500}, {"ds": "06/01", "price": 14665, "total": 1.2, "verdict": "强偏多", "s1": 1, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 7324, "short_sum": -5971, "net": 6206, "foreign": 10524}, {"ds": "06/02", "price": 14495, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 10261, "short_sum": -7361, "net": 4338, "foreign": 13527}, {"ds": "06/03", "price": 14400, "total": 1.25, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 0, "s4": 1, "s5": -1, "s6": 0, "gs_net": 10357, "short_sum": -9183, "net": -1107, "foreign": 13839}, {"ds": "06/04", "price": 14405, "total": 0.6, "verdict": "偏多", "s1": 1, "s2": 1, "s3": 0, "s4": 0, "s5": -1, "s6": 1, "gs_net": 6033, "short_sum": -5960, "net": 1172, "foreign": 9568}, {"ds": "06/05", "price": 14630, "total": 0.8, "verdict": "偏多", "s1": 1, "s2": 2, "s3": 0, "s4": 0, "s5": -1, "s6": 0, "gs_net": 6630, "short_sum": -1165, "net": 4206, "foreign": 10108}, {"ds": "06/08", "price": 14665, "total": 1.55, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 8431, "short_sum": -827, "net": 4697, "foreign": 11858}, {"ds": "06/09", "price": 14545, "total": 1.2, "verdict": "强偏多", "s1": 1, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 7915, "short_sum": -1230, "net": 5106, "foreign": 11355}, {"ds": "06/10", "price": 14530, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 8612, "short_sum": -448, "net": 8004, "foreign": 12123}, {"ds": "06/11", "price": 14665, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 9474, "short_sum": 0, "net": 9275, "foreign": 12565}, {"ds": "06/12", "price": 14630, "total": 1.15, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 1, "s4": 1, "s5": -1, "s6": -1, "gs_net": 10192, "short_sum": 0, "net": 5989, "foreign": 13162}]};
+const BUILTIN_CAPITAL = [{"ds": "04/24", "price": 14305, "total": 0.65, "verdict": "偏多", "s1": 2, "s2": 0, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 17678, "short_sum": -29418, "net": -13465, "foreign": 21855}, {"ds": "04/27", "price": 14240, "total": 0.3, "verdict": "中性", "s1": 2, "s2": -1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16980, "short_sum": -30481, "net": -13350, "foreign": 19226}, {"ds": "04/28", "price": 14225, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 14334, "short_sum": -31760, "net": -5466, "foreign": 17536}, {"ds": "04/29", "price": 14160, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16209, "short_sum": -31053, "net": -4831, "foreign": 19441}, {"ds": "04/30", "price": 14275, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16299, "short_sum": -35008, "net": -6270, "foreign": 19692}, {"ds": "05/06", "price": 14150, "total": 0.3, "verdict": "中性", "s1": 2, "s2": -1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 16290, "short_sum": -36457, "net": -4573, "foreign": 20547}, {"ds": "05/07", "price": 14110, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 15418, "short_sum": -34027, "net": -4700, "foreign": 19619}, {"ds": "05/08", "price": 14240, "total": -0.05, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 1, "s5": -1, "s6": -1, "gs_net": 13524, "short_sum": -28115, "net": -5207, "foreign": 17743}, {"ds": "05/11", "price": 14160, "total": 1.15, "verdict": "偏多", "s1": 2, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 14331, "short_sum": -27284, "net": -6106, "foreign": 18501}, {"ds": "05/12", "price": 14255, "total": 0.9, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 15218, "short_sum": -24704, "net": -2185, "foreign": 19416}, {"ds": "05/13", "price": 14270, "total": 0.9, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": 1, "s6": 0, "gs_net": 15483, "short_sum": -26002, "net": -3406, "foreign": 19727}, {"ds": "05/14", "price": 14125, "total": 1.5, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": 1, "s6": 0, "gs_net": 14697, "short_sum": -24465, "net": 889, "foreign": 18973}, {"ds": "05/15", "price": 14150, "total": 1.75, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 1, "s5": 1, "s6": 0, "gs_net": 16742, "short_sum": -20032, "net": 314, "foreign": 21033}, {"ds": "05/18", "price": 14055, "total": 1.7, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 1, "s5": 1, "s6": -1, "gs_net": 17142, "short_sum": -20606, "net": 675, "foreign": 21486}, {"ds": "05/19", "price": 13935, "total": 1.05, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": 1, "s6": -1, "gs_net": 13669, "short_sum": -21053, "net": -1442, "foreign": 18039}, {"ds": "05/20", "price": 14000, "total": 1.1, "verdict": "偏多", "s1": 2, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": -1, "gs_net": 10915, "short_sum": -15977, "net": -4457, "foreign": 15294}, {"ds": "05/21", "price": 14085, "total": 0.05, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 1, "s5": 1, "s6": -1, "gs_net": 7922, "short_sum": -15822, "net": -2042, "foreign": 12300}, {"ds": "05/22", "price": 14310, "total": 0.0, "verdict": "中性", "s1": -1, "s2": 2, "s3": -1, "s4": 0, "s5": 1, "s6": 0, "gs_net": 6922, "short_sum": -14570, "net": -2229, "foreign": 11296}, {"ds": "05/25", "price": 14840, "total": -0.25, "verdict": "中性", "s1": -1, "s2": 1, "s3": -1, "s4": 0, "s5": 1, "s6": 0, "gs_net": 5232, "short_sum": -14485, "net": -5485, "foreign": 9534}, {"ds": "05/26", "price": 14795, "total": 1.05, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": -1, "s6": 1, "gs_net": 11023, "short_sum": -13556, "net": -177, "foreign": 16168}, {"ds": "05/27", "price": 15000, "total": 1.0, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 0, "s4": 1, "s5": -1, "s6": 0, "gs_net": 9698, "short_sum": -12596, "net": -1727, "foreign": 14837}, {"ds": "05/28", "price": 15075, "total": 0.8, "verdict": "偏多", "s1": 2, "s2": 1, "s3": -1, "s4": 1, "s5": -1, "s6": 0, "gs_net": 11300, "short_sum": -13273, "net": -3220, "foreign": 14500}, {"ds": "06/01", "price": 14665, "total": 1.2, "verdict": "强偏多", "s1": 1, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 7324, "short_sum": -5971, "net": 6206, "foreign": 10524}, {"ds": "06/02", "price": 14495, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 10261, "short_sum": -7361, "net": 4338, "foreign": 13527}, {"ds": "06/03", "price": 14400, "total": 1.25, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 0, "s4": 1, "s5": -1, "s6": 0, "gs_net": 10357, "short_sum": -9183, "net": -1107, "foreign": 13839}, {"ds": "06/04", "price": 14405, "total": 0.6, "verdict": "偏多", "s1": 1, "s2": 1, "s3": 0, "s4": 0, "s5": -1, "s6": 1, "gs_net": 6033, "short_sum": -5960, "net": 1172, "foreign": 9568}, {"ds": "06/05", "price": 14630, "total": 0.8, "verdict": "偏多", "s1": 1, "s2": 2, "s3": 0, "s4": 0, "s5": -1, "s6": 0, "gs_net": 6630, "short_sum": -1165, "net": 4206, "foreign": 10108}, {"ds": "06/08", "price": 14665, "total": 1.55, "verdict": "强偏多", "s1": 2, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 8431, "short_sum": -827, "net": 4697, "foreign": 11858}, {"ds": "06/09", "price": 14545, "total": 1.2, "verdict": "强偏多", "s1": 1, "s2": 2, "s3": 2, "s4": 0, "s5": -1, "s6": 0, "gs_net": 7915, "short_sum": -1230, "net": 5106, "foreign": 11355}, {"ds": "06/10", "price": 14530, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 8612, "short_sum": -448, "net": 8004, "foreign": 12123}, {"ds": "06/11", "price": 14665, "total": 1.4, "verdict": "强偏多", "s1": 2, "s2": 1, "s3": 2, "s4": 1, "s5": -1, "s6": 0, "gs_net": 9474, "short_sum": 0, "net": 9275, "foreign": 12565}, {"ds": "06/12", "price": 14630, "total": 1.15, "verdict": "偏多", "s1": 2, "s2": 1, "s3": 1, "s4": 1, "s5": -1, "s6": -1, "gs_net": 10192, "short_sum": 0, "net": 5989, "foreign": 13162}];
+
+// 启动
+loadData();
+</script>
+</body>
+</html>
